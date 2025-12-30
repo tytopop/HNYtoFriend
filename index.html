@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>С Новым Годом!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Marck+Script&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #0c3a56, #1a5f7a);
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Marck Script", cursive;
+      color: white;
+      font-size: 2.5rem;
+      text-align: center;
+      padding: 20px;
+    }
+    .snowflake {
+      position: absolute;
+      color: white;
+      font-size: 1.2rem;
+      opacity: 0.8;
+      animation: fall 10s linear infinite;
+    }
+    @keyframes fall {
+      to { transform: translateY(100vh); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Снежинки -->
+  <script>
+    for (let i = 0; i < 30; i++) {
+      const snow = document.createElement("div");
+      snow.className = "snowflake";
+      snow.textContent = "❄";
+      snow.style.left = Math.random() * 100 + "vw";
+      snow.style.opacity = Math.random() * 0.5 + 0.3;
+      snow.style.fontSize = (Math.random() * 10 + 10) + "px";
+      snow.style.animationDuration = (Math.random() * 5 + 5) + "s";
+      document.body.appendChild(snow);
+    }
+  </script>
+
+  <!-- Поздравление -->
+  <div id="greeting">
+    Загрузка...
+  </div>
+
+  <script>
+    // Получаем имя из URL
+    function getUrlParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    // Основная логика
+    document.addEventListener("DOMContentLoaded", () => {
+      let name = getUrlParam("name") || "друг";
+      
+      // Декодируем, если нужно
+      try {
+        name = decodeURIComponent(name);
+      } catch (e) {
+        // Используем как есть
+      }
+
+      // Формируем поздравление
+      const greeting = document.getElementById("greeting");
+      greeting.innerHTML = `
+        <p>${name},</p>
+        <p>с Новым годом! 🎄</p>
+        <p style="font-size: 1.2rem; margin-top: 20px;">
+          Тебе прислали это поздравление.<br>
+          Пусть 2026 год принесёт тебе удачу, здоровье и успех!
+        </p>
+      `;
+    });
+  </script>
+</body>
+</html>
