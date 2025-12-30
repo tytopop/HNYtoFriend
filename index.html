@@ -479,162 +479,177 @@
   <div class="snow snow_16"></div><div class="snow snow_17"></div><div class="snow snow_18"></div>
   <div class="snow snow_19"></div>
 
-  <script>
-    // === ФУНКЦИИ ===
-    function getUrlParams() {
-      return new URLSearchParams(window.location.search);
+<script>
+  // === ФУНКЦИИ ===
+  function getUrlParams() {
+    return new URLSearchParams(window.location.search);
+  }
+
+  function getParam(name, fallback = null) {
+    const params = getUrlParams();
+    const val = params.get(name);
+    if (val === null) return fallback;
+    try {
+      return decodeURIComponent(val).trim();
+    } catch {
+      return val.trim();
     }
+  }
 
-    function getParam(name, fallback = null) {
-      const params = getUrlParams();
-      const val = params.get(name);
-      if (val === null) return fallback;
-      try {
-        return decodeURIComponent(val).trim();
-      } catch {
-        return val.trim();
-      }
+  function setParam(key, value) {
+    const params = getUrlParams();
+    if (value === null || value === "") {
+      params.delete(key);
+    } else {
+      params.set(key, encodeURIComponent(value));
     }
+    const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+    window.history.replaceState({}, '', newUrl);
+    return newUrl;
+  }
 
-    function setParam(key, value) {
-      const params = getUrlParams();
-      if (value === null || value === "") {
-        params.delete(key);
-      } else {
-        params.set(key, encodeURIComponent(value));
-      }
-      const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
-      window.history.replaceState({}, '', newUrl);
-      return newUrl;
+  // === ТЕКСТЫ ===
+  const DEFAULT_MESSAGE = "Я желаю тебе здоровья, денег и удачи. Пусть новый год будет таким, каким ты хочешь! А также надеюсь ты найдёшь ответ для себя для решения формулы A=x+y+z , где А это Успех!";
+  const DEFAULT_AUTHOR = "Вадим Егги";
+
+  // === ОТОБРАЖЕНИЕ ===
+  function renderGreeting() {
+    const to = getParam("to", getParam("name", "друг"));
+    const from = getParam("from", DEFAULT_AUTHOR);
+    const customMessage = getParam("message");
+    const useCustom = getParam("use_custom") === "1";
+
+    document.getElementById("tgName").textContent = to + ",";
+    document.querySelector(".congrats__author").textContent = `${from}, Декабрь 2025`;
+
+    const messageEl = document.querySelector(".congrats__message");
+    if (useCustom && customMessage) {
+      messageEl.textContent = customMessage;
+    } else {
+      messageEl.textContent = DEFAULT_MESSAGE;
     }
+  }
 
-    // === ТЕКСТЫ ===
-    const DEFAULT_MESSAGE = "Я желаю тебе здоровья, денег и удачи. Пусть новый год будет таким, каким ты хочешь! А также надеюсь ты найдёшь ответ для себя для решения формулы A=x+y+z , где А это Успех!";
-    const DEFAULT_AUTHOR = "Вадим Егги";
-
-    // === ОТОБРАЖЕНИЕ ===
-    function renderGreeting() {
-      const to = getParam("to", getParam("name", "друг"));
-      const from = getParam("from", DEFAULT_AUTHOR);
-      const customMessage = getParam("message");
-      const useCustom = getParam("use_custom") === "1";
-
-      document.getElementById("tgName").textContent = to + ",";
-      document.querySelector(".congrats__author").textContent = `${from}, Декабрь 2025`;
-
-      const messageEl = document.querySelector(".congrats__message");
-      if (useCustom && customMessage) {
-        messageEl.textContent = customMessage;
-      } else {
-        messageEl.textContent = DEFAULT_MESSAGE;
-      }
-    }
-
-    function renderForm() {
-      const container = document.getElementById("config-panel");
-      if (!container) return;
-
-      const to = getParam("to", getParam("name", ""));
-      const from = getParam("from", DEFAULT_AUTHOR);
-      const customMessage = getParam("message", "");
-      const useCustom = getParam("use_custom") === "1";
-
-      container.innerHTML = `
-        <div style="background: rgba(12, 50, 85, 0.95); padding: 16px; border-radius: 16px; max-width: 90vw; width: 400px; margin: 0 auto; color: white; box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-family: 'Marck Script', cursive; font-size: 1.2rem;">
-          <h3 style="margin-top: 0; font-size: 1.4rem;">🎄 Настройка поздравления</h3>
-          
-          <label>Кому:<br>
-            <input id="input-to" type="text" value="${to}" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem;">
-          </label>
-          
-          <label>От кого:<br>
-            <input id="input-from" type="text" value="${from}" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem;">
-          </label>
-
-          <label style="display: flex; align-items: center; margin: 10px 0;">
-            <input type="checkbox" id="use-custom" ${useCustom ? 'checked' : ''}>
-            <span style="margin-left: 8px;">Использовать свой текст</span>
-          </label>
-
-          <textarea id="input-message" rows="4" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem; display: ${useCustom ? 'block' : 'none'};">${customMessage}</textarea>
-
-          <div style="display: flex; gap: 8px; margin-top: 12px;">
-            <button id="btn-apply" style="flex:1; background:#4a90e2; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; font-family: inherit;">Применить</button>
-            <button id="btn-share" style="flex:1; background:#50c878; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; font-family: inherit;">Ссылка</button>
-          </div>
-
-          <div id="share-link" style="margin-top: 12px; font-size: 0.85rem; word-break: break-all; display: none;"></div>
-        </div>
+  function showConfigPanel() {
+    let panel = document.getElementById("config-panel");
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.id = "config-panel";
+      panel.style.cssText = `
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        pointer-events: auto;
       `;
-
-      document.getElementById("use-custom").addEventListener("change", (e) => {
-        document.getElementById("input-message").style.display = e.target.checked ? "block" : "none";
-      });
-
-      document.getElementById("btn-apply").addEventListener("click", () => {
-        const to = document.getElementById("input-to").value || "друг";
-        const from = document.getElementById("input-from").value || DEFAULT_AUTHOR;
-        const useCustom = document.getElementById("use-custom").checked;
-        const message = useCustom ? document.getElementById("input-message").value : "";
-        setParam("to", to);
-        setParam("from", from);
-        setParam("use_custom", useCustom ? "1" : "0");
-        setParam("message", useCustom ? message : null);
-        renderGreeting();
-        document.getElementById("share-link").style.display = "none";
-      });
-
-      document.getElementById("btn-share").addEventListener("click", () => {
-        const link = window.location.href;
-        document.getElementById("share-link").textContent = link;
-        document.getElementById("share-link").style.display = "block";
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(link);
-        }
-      });
+      document.body.appendChild(panel);
     }
 
-    // === ИНИЦИАЛИЗАЦИЯ ===
-    document.addEventListener("DOMContentLoaded", () => {
-      const showConfig = getParam("edit") === "1";
+    const to = getParam("to", getParam("name", ""));
+    const from = getParam("from", DEFAULT_AUTHOR);
+    const customMessage = getParam("message", "");
+    const useCustom = getParam("use_custom") === "1";
 
-      if (showConfig) {
-        const panel = document.createElement("div");
-        panel.id = "config-panel";
-        panel.style.pointerEvents = "auto";
-        document.body.appendChild(panel);
-        renderForm();
-      }
+    panel.innerHTML = `
+      <div style="background: rgba(12, 50, 85, 0.95); padding: 16px; border-radius: 16px; max-width: 90vw; width: 400px; margin: 0 auto; color: white; box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-family: 'Marck Script', cursive; font-size: 1.2rem;">
+        <h3 style="margin-top: 0; font-size: 1.4rem;">🎄 Настройка поздравления</h3>
+        
+        <label>Кому:<br>
+          <input id="input-to" type="text" value="${to}" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem;">
+        </label>
+        
+        <label>От кого:<br>
+          <input id="input-from" type="text" value="${from}" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem;">
+        </label>
 
-      renderGreeting();
+        <label style="display: flex; align-items: center; margin: 10px 0;">
+          <input type="checkbox" id="use-custom" ${useCustom ? 'checked' : ''}>
+          <span style="margin-left: 8px;">Использовать свой текст</span>
+        </label>
 
-      // Многоязычность и таймер
-      function updateCountdown() {
-        const now = new Date();
-        const target = new Date(now.getFullYear() + 1, 0, 1, 0, 0, 0);
-        const diffMs = target - now;
-        if (diffMs <= 0) {
-          document.getElementById("cdGrid").hidden = true;
-          document.getElementById("cdDone").hidden = false;
-          return;
-        }
-        const totalSec = Math.floor(diffMs / 1000);
-        const days = Math.floor(totalSec / 86400);
-        const hours = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, "0");
-        const mins = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
-        const secs = String(totalSec % 60).padStart(2, "0");
-        document.getElementById("cdDays").textContent = days;
-        document.getElementById("cdHours").textContent = hours;
-        document.getElementById("cdMins").textContent = mins;
-        document.getElementById("cdSecs").textContent = secs;
-        document.getElementById("cdDaysLbl").textContent = 
-          days % 10 === 1 && days % 100 !== 11 ? "день" :
-          days % 10 >= 2 && days % 10 <= 4 && (days % 100 < 10 || days % 100 >= 20) ? "дня" : "дней";
-      }
+        <textarea id="input-message" rows="4" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem; display: ${useCustom ? 'block' : 'none'};">${customMessage}</textarea>
 
-      updateCountdown();
-      setInterval(updateCountdown, 1000);
+        <div style="display: flex; gap: 8px; margin-top: 12px;">
+          <button id="btn-apply" style="flex:1; background:#4a90e2; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; font-family: inherit;">Применить</button>
+          <button id="btn-share" style="flex:1; background:#50c878; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; font-family: inherit;">Ссылка</button>
+        </div>
+
+        <div id="share-link" style="margin-top: 12px; font-size: 0.85rem; word-break: break-all; display: none;"></div>
+      </div>
+    `;
+
+    document.getElementById("use-custom").addEventListener("change", (e) => {
+      document.getElementById("input-message").style.display = e.target.checked ? "block" : "none";
     });
-  </script>
+
+    document.getElementById("btn-apply").addEventListener("click", () => {
+      const to = document.getElementById("input-to").value || "друг";
+      const from = document.getElementById("input-from").value || DEFAULT_AUTHOR;
+      const useCustom = document.getElementById("use-custom").checked;
+      const message = useCustom ? document.getElementById("input-message").value : "";
+      
+      // Обновляем URL
+      setParam("to", to);
+      setParam("from", from);
+      setParam("use_custom", useCustom ? "1" : "0");
+      setParam("message", useCustom ? message : null);
+      setParam("edit", null); // ← УБИРАЕМ edit=1
+      
+      // Удаляем панель
+      if (panel) panel.remove();
+      
+      // Обновляем поздравление
+      renderGreeting();
+    });
+
+    document.getElementById("btn-share").addEventListener("click", () => {
+      const link = window.location.href;
+      document.getElementById("share-link").textContent = link;
+      document.getElementById("share-link").style.display = "block";
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(link);
+      }
+    });
+  }
+
+  // === ИНИЦИАЛИЗАЦИЯ ===
+  document.addEventListener("DOMContentLoaded", () => {
+    const showConfig = getParam("edit") === "1";
+
+    if (showConfig) {
+      showConfigPanel();
+    }
+
+    renderGreeting();
+
+    // Таймер
+    function updateCountdown() {
+      const now = new Date();
+      const target = new Date(now.getFullYear() + 1, 0, 1, 0, 0, 0);
+      const diffMs = target - now;
+      if (diffMs <= 0) {
+        document.getElementById("cdGrid").hidden = true;
+        document.getElementById("cdDone").hidden = false;
+        return;
+      }
+      const totalSec = Math.floor(diffMs / 1000);
+      const days = Math.floor(totalSec / 86400);
+      const hours = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, "0");
+      const mins = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
+      const secs = String(totalSec % 60).padStart(2, "0");
+      document.getElementById("cdDays").textContent = days;
+      document.getElementById("cdHours").textContent = hours;
+      document.getElementById("cdMins").textContent = mins;
+      document.getElementById("cdSecs").textContent = secs;
+      document.getElementById("cdDaysLbl").textContent = 
+        days % 10 === 1 && days % 100 !== 11 ? "день" :
+        days % 10 >= 2 && days % 10 <= 4 && (days % 100 < 10 || days % 100 >= 20) ? "дня" : "дней";
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  });
+</script>
 </body>
 </html>
