@@ -2,82 +2,638 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>С Новым Годом!</title>
   <link href="https://fonts.googleapis.com/css2?family=Marck+Script&display=swap" rel="stylesheet" />
   <style>
+    :root {
+      --timer-digits: #bfeaff;
+      --timer-digits-glow: rgba(191, 234, 255, 0.7);
+    }
+
     body {
       background: linear-gradient(135deg, #0c3a56, #1a5f7a);
       margin: 0;
-      min-height: 100vh;
+      min-height: max(500px, 100dvh);
+      font-family: "Marck Script", system-ui;
+      font-size: 1.25rem;
+      color: #f8f9fa;
       display: grid;
-      place-items: center;
-      font-family: "Marck Script", cursive;
-      color: white;
-      font-size: 2.5rem;
-      text-align: center;
-      padding: 20px;
+      grid-template-rows: 1fr 20dvh;
+      overflow: hidden;
+      position: relative;
     }
-    .snowflake {
+
+    @media (min-width: 1200px) {
+      body { font-size: 2rem; }
+    }
+
+    /* ГИРЛЯНДЫ */
+    .garland {
       position: absolute;
-      color: white;
-      font-size: 1.2rem;
-      opacity: 0.8;
-      animation: fall 10s linear infinite;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      padding: 0 20px;
+      z-index: 10;
+      pointer-events: none;
     }
-    @keyframes fall {
-      to { transform: translateY(100vh); }
+    .garland--top { top: 0; }
+    .garland--bottom { bottom: 20dvh; }
+
+    .bulb {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin: 8px 0;
+      box-shadow: 0 0 8px 2px currentColor;
+      animation: twinkle 1.8s infinite ease-in-out;
+    }
+    .bulb:nth-child(1) { color: #ff4d4d; animation-delay: 0.2s; }
+    .bulb:nth-child(2) { color: #4dff4d; animation-delay: 0.8s; }
+    .bulb:nth-child(3) { color: #4d4dff; animation-delay: 1.4s; }
+    .bulb:nth-child(4) { color: #ffff4d; animation-delay: 0.5s; }
+    .bulb:nth-child(5) { color: #ff4dff; animation-delay: 1.1s; }
+    .bulb:nth-child(6) { color: #4dffff; animation-delay: 0.3s; }
+    .bulb:nth-child(7) { color: #ff994d; animation-delay: 1.6s; }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.5; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.2); }
+    }
+
+    /* ЁЛОЧНЫЕ ШАРЫ */
+    .ornament {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      z-index: 5;
+    }
+    .ornament--top-left { top: 20px; left: 20px; background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b); box-shadow: 0 0 15px rgba(255,107,107,0.7); }
+    .ornament--top-right { top: 20px; right: 20px; background: radial-gradient(circle at 30% 30%, #4ecdc4, #1a5f7a); box-shadow: 0 0 15px rgba(78,205,196,0.7); }
+    .ornament--bottom-left{ bottom: calc(20dvh + 20px); left: 20px; background: radial-gradient(circle at 30% 30%, #ffd166, #f4a261); box-shadow: 0 0 15px rgba(255,209,102,0.7); }
+    .ornament--bottom-right{bottom: calc(20dvh + 20px); right: 20px; background: radial-gradient(circle at 30% 30%, #a09abc, #6a5acd); box-shadow: 0 0 15px rgba(160,154,188,0.7); }
+
+    /* ТЕКСТ */
+    p[class] { margin-block: 0; }
+    .congrats {
+      margin: auto;
+      text-align: center;
+      z-index: 20;
+      position: relative;
+      color: #f8f9fa;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    @media (max-width: 480px) {
+      .congrats { padding: 1rem; }
+      .congrats__message { text-wrap: pretty; }
+    }
+    .congrats__wish {
+      margin-top: 1.75rem;
+      display: grid;
+      gap: 2.2rem;
+    }
+    .congrats__attention {
+      display: grid;
+      font-size: 1.75rem;
+    }
+    .congrats__author {
+      display: flex;
+      align-items: center;
+      font-size: 0.75em;
+      justify-self: end;
+      color: #e0f7fa;
+    }
+    .congrats__author::before {
+      content: "";
+      width: 25px;
+      height: 2px;
+      margin-right: 0.5em;
+      background-color: currentColor;
+    }
+    @media (min-width: 481px) {
+      .congrats__attention {
+        grid-template-columns: min-content 1fr;
+        grid-template-rows: repeat(2, 1fr);
+        line-height: 1;
+        width: fit-content;
+        margin-inline: auto;
+      }
+      .congrats__new-year { grid-column: 2; grid-row: 2; }
+      .congrats__message { max-width: 75%; margin-inline: auto; text-align: center; }
+    }
+    @media (min-width: 1200px) {
+      .congrats__attention { font-size: 4.5rem; }
+    }
+
+    /* СНЕЖИНКИ */
+    .snow::before,
+    .snow::after {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background-color: #ffffff;
+      opacity: 0;
+      animation-name: snow;
+      animation-duration: 8000ms;
+      animation-iteration-count: infinite;
+      animation-fill-mode: backwards;
+      position: absolute;
+      top: 0;
+      z-index: 40;
+    }
+
+    .snow_1::before { left: 10%; translate: 0 1dvh; }
+    .snow_1::after { left: 20%; translate: 0 1.5dvh; animation-delay: 200ms; }
+    .snow_2::before { left: 30%; translate: 0 2dvh; animation-delay: 520ms; }
+    .snow_2::after { left: 40%; translate: 0 2.5dvh; animation-delay: 999ms; }
+    .snow_3::before { left: 50%; translate: 0 3dvh; animation-delay: 150ms; }
+    .snow_3::after { left: 60%; translate: 0 3.5dvh; animation-delay: 400ms; }
+    .snow_4::before { left: 70%; translate: 0 4dvh; animation-delay: 1550ms; }
+    .snow_4::after { left: 80%; translate: 0 4.5dvh; animation-delay: 655ms; }
+    .snow_5::before { left: 86%; translate: 0 5dvh; animation-delay: 250ms; }
+    .snow_5::after { left: 55%; translate: 0 5.5dvh; animation-delay: 600ms; }
+    .snow_6::before { left: 15%; translate: 0 6dvh; animation-delay: 2000ms; }
+    .snow_6::after { left: 25%; translate: 0 6.5dvh; animation-delay: 2400ms; }
+    .snow_7::before { left: 35%; translate: 0 7dvh; animation-delay: 2999ms; }
+    .snow_7::after { left: 45%; translate: 0 7.5dvh; animation-delay: 1300ms; }
+    .snow_8::before { left: 55%; translate: 0 8dvh; animation-delay: 2150ms; }
+    .snow_8::after { left: 65%; translate: 0 8.5dvh; animation-delay: 2140ms; }
+    .snow_9::before { left: 75%; translate: 0 5.5dvh; animation-delay: 2600ms; }
+    .snow_9::after { left: 84%; translate: 0 5.5dvh; animation-delay: 2666ms; }
+    .snow_10::before { left: 89%; translate: 0 5.5dvh; animation-delay: 2200ms; }
+    .snow_10::after { left: 10%; translate: 0 5.5dvh; animation-delay: 2400ms; }
+    .snow_11::before { left: 20%; translate: 0 5.5dvh; animation-delay: 3200ms; }
+    .snow_11::after { left: 30%; translate: 0 5.5dvh; animation-delay: 3500ms; }
+    .snow_12::before { left: 40%; translate: 0 2.5dvh; animation-delay: 3999ms; }
+    .snow_12::after { left: 50%; translate: 0 3dvh; animation-delay: 3150ms; }
+    .snow_13::before { left: 60%; translate: 0 3.5dvh; animation-delay: 3400ms; }
+    .snow_13::after { left: 70%; translate: 0 4dvh; animation-delay: 4550ms; }
+    .snow_14::before { left: 79%; translate: 0 4.5dvh; animation-delay: 3655ms; }
+    .snow_14::after { left: 86%; translate: 0 5dvh; animation-delay: 3250ms; }
+    .snow_15::before { left: 55%; translate: 0 5.5dvh; animation-delay: 4600ms; }
+    .snow_15::after { left: 15%; translate: 0 6dvh; animation-delay: 6000ms; }
+    .snow_16::before { left: 25%; translate: 0 6.5dvh; animation-delay: 6400ms; }
+    .snow_16::after { left: 35%; translate: 0 7dvh; animation-delay: 6999ms; }
+    .snow_17::before { left: 45%; translate: 0 7.5dvh; animation-delay: 5300ms; }
+    .snow_17::after { left: 55%; translate: 0 8dvh; animation-delay: 6150ms; }
+    .snow_18::before { left: 65%; translate: 0 8.5dvh; animation-delay: 6140ms; }
+    .snow_18::after { left: 75%; translate: 0 5.5dvh; animation-delay: 6600ms; }
+    .snow_19::before { left: 83%; translate: 0 5.5dvh; animation-delay: 6666ms; }
+    .snow_19::after { left: 89%; translate: 0 5.5dvh; animation-delay: 6200ms; }
+
+    @keyframes snow {
+      0% { translate: 0 0; opacity: 0; scale: 1; }
+      10% { opacity: 1; }
+      100% { translate: 0 105dvh; scale: 1.2; }
+    }
+
+    /* СУГРОБ */
+    .snowbank {
+      width: 100%;
+      height: 20dvh;
+      position: relative;
+      margin-top: auto;
+      z-index: 30;
+      overflow: visible;
+      background: linear-gradient(180deg, #ffffff 0%, #f0f6ff 70%, #e6f0ff 100%);
+      box-shadow:
+        0 -12px 32px rgba(255,255,255,0.2) inset,
+        0 -6px 18px rgba(0,0,0,0.08) inset;
+    }
+
+    /* ЁЛКИ */
+    .tree {
+      position: absolute;
+      bottom: -2.2dvh;
+      width: 120px;
+      height: 170px;
+      z-index: 55;
+      filter: drop-shadow(0 10px 18px rgba(0,0,0,.18));
+      pointer-events: none;
+    }
+    .tree--left { left: 10px; }
+    .tree--right { right: 10px; }
+    .tree__star {
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%) rotate(12deg);
+      width: 18px;
+      height: 18px;
+      background: radial-gradient(circle, #fff6a6, #ffcc33);
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+      box-shadow: 0 0 18px rgba(255,230,140,.9);
+      animation: starPulse 1.8s infinite ease-in-out;
+    }
+    @keyframes starPulse {
+      0%,100% { transform: translateX(-50%) rotate(12deg) scale(1); opacity: .9; }
+      50% { transform: translateX(-50%) rotate(12deg) scale(1.15); opacity: 1; }
+    }
+    .tree__layer {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0; height: 0;
+      border-left: 62px solid transparent;
+      border-right: 62px solid transparent;
+      border-bottom: 78px solid #1f7a3a;
+      filter: saturate(1.05);
+    }
+    .tree__layer:nth-child(2) { top: 10px; }
+    .tree__layer:nth-child(3) {
+      top: 48px;
+      border-left-width: 54px;
+      border-right-width: 54px;
+      border-bottom-width: 72px;
+      border-bottom-color: #1a6b33;
+    }
+    .tree__layer:nth-child(4) {
+      top: 82px;
+      border-left-width: 46px;
+      border-right-width: 46px;
+      border-bottom-width: 66px;
+      border-bottom-color: #155a2c;
+    }
+    .tree__trunk {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 22px;
+      height: 28px;
+      border-radius: 6px;
+      background: linear-gradient(#7a4a2a, #5b351f);
+      box-shadow: inset 0 0 10px rgba(255,255,255,.08);
+    }
+    .tree__lights {
+      position: absolute;
+      left: 50%;
+      top: 26px;
+      transform: translateX(-50%);
+      width: 90px;
+      height: 110px;
+      pointer-events: none;
+    }
+    .light {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      box-shadow: 0 0 10px 3px currentColor;
+      animation: twinkle 1.6s infinite ease-in-out;
+      opacity: .95;
+    }
+    .light.l1 { left:10px; top:12px; color:#ff4d4d; animation-delay:.1s; }
+    .light.l2 { left:62px; top:18px; color:#4dffff; animation-delay:.7s; }
+    .light.l3 { left:28px; top:40px; color:#ffff4d; animation-delay:.3s; }
+    .light.l4 { left:70px; top:52px; color:#ff4dff; animation-delay:1.1s; }
+    .light.l5 { left:18px; top:72px; color:#4dff4d; animation-delay:.5s; }
+    .light.l6 { left:56px; top:82px; color:#ff994d; animation-delay:1.4s; }
+
+    @media (max-width: 520px) {
+      .tree {
+        transform: scale(.68);
+        opacity: .82;
+        bottom: -4.8dvh;
+      }
+      .tree--left { left: -16px; }
+      .tree--right { right: -16px; }
+    }
+
+    /* ТАЙМЕР */
+    .countdown {
+      position: absolute;
+      left: 50%;
+      bottom: 4dvh;
+      transform: translateX(-50%);
+      z-index: 60;
+      width: min(74vw, 480px);
+      padding: 10px;
+      border-radius: 16px;
+      background: rgba(12, 50, 85, 0.32);
+      border: 1px solid rgba(180, 220, 255, 0.24);
+      backdrop-filter: blur(10px);
+      box-shadow:
+        0 6px 20px rgba(0, 20, 40, 0.28),
+        0 0 0 1px rgba(100, 160, 255, 0.12);
+      text-align: center;
+      color: #ffffff;
+      pointer-events: none;
+    }
+
+    .countdown__title {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      line-height: 1.2;
+      color: #e0f3ff;
+      text-shadow:
+        0 0 12px rgba(224, 243, 255, 0.8),
+        0 2px 6px rgba(0, 30, 60, 0.4);
+      font-weight: 500;
+    }
+
+    .countdown__grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .countdown__cell {
+      padding: 8px 0;
+      border-radius: 14px;
+      background: rgba(8, 40, 70, 0.45);
+      border: 1px solid rgba(160, 210, 255, 0.2);
+      box-shadow: inset 0 0 8px rgba(180, 230, 255, 0.1);
+    }
+
+    .countdown__num {
+      font-size: 1.65rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--timer-digits);
+      text-shadow:
+        0 0 14px var(--timer-digits-glow),
+        0 2px 6px rgba(0, 30, 60, 0.3);
+    }
+
+    .countdown__label {
+      margin-top: 4px;
+      font-size: 0.82rem;
+      line-height: 1.1;
+      color: #c0e4ff;
+      text-shadow: 0 0 6px rgba(192, 228, 255, 0.5);
+    }
+
+    .countdown__done {
+      font-size: 1.5rem;
+      padding: 6px 0 0;
+      color: #ffffff;
+      text-shadow:
+        0 0 20px rgba(255, 255, 255, 0.9),
+        0 2px 8px rgba(0, 30, 60, 0.4);
+    }
+
+    @media (max-width: 520px) {
+      .countdown {
+        bottom: 3.8dvh;
+        width: min(80vw, 320px);
+      }
+      .countdown__grid { grid-template-columns: repeat(2, 1fr); }
+      .countdown__num { font-size: 1.35rem; }
+      .countdown__label { font-size: 0.76rem; }
+    }
+
+    /* ПАНЕЛЬ НАСТРОЕК */
+    #config-panel {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
     }
   </style>
 </head>
 <body>
-  <!-- Снежинки -->
-  <script>
-    for (let i = 0; i < 30; i++) {
-      const snow = document.createElement("div");
-      snow.className = "snowflake";
-      snow.textContent = "❄";
-      snow.style.left = Math.random() * 100 + "vw";
-      snow.style.opacity = Math.random() * 0.5 + 0.3;
-      snow.style.fontSize = (Math.random() * 10 + 10) + "px";
-      snow.style.animationDuration = (Math.random() * 5 + 5) + "s";
-      document.body.appendChild(snow);
-    }
-  </script>
 
-  <!-- Поздравление -->
-  <div id="greeting">
-    Загрузка...
+  <div class="ornament ornament--top-left"></div>
+  <div class="ornament ornament--top-right"></div>
+  <div class="ornament ornament--bottom-left"></div>
+  <div class="ornament ornament--bottom-right"></div>
+
+  <div class="garland garland--top">
+    <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+    <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+  </div>
+  <div class="garland garland--bottom">
+    <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+    <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
   </div>
 
+  <div class="congrats">
+    <div class="congrats__attention">
+      <span class="congrats__name"><span id="tgName">друг</span>,</span>
+      <span class="congrats__new-year">с Новым годом!</span>
+    </div>
+    <div class="congrats__wish">
+      <p class="congrats__message">Я желаю тебе здоровья, денег и удачи. Пусть новый год будет таким, каким ты хочешь! А также надеюсь ты найдёшь ответ для себя для решения формулы A=x+y+z , где А это Успех!</p>
+      <p class="congrats__author">Вадим Егги, Декабрь 2025</p>
+    </div>
+  </div>
+
+  <div class="snowbank">
+    <div class="tree tree--left" aria-hidden="true">
+      <div class="tree__star"></div>
+      <div class="tree__layer"></div>
+      <div class="tree__layer"></div>
+      <div class="tree__layer"></div>
+      <div class="tree__lights">
+        <span class="light l1"></span><span class="light l2"></span><span class="light l3"></span>
+        <span class="light l4"></span><span class="light l5"></span><span class="light l6"></span>
+      </div>
+      <div class="tree__trunk"></div>
+    </div>
+    <div class="tree tree--right" aria-hidden="true">
+      <div class="tree__star"></div>
+      <div class="tree__layer"></div>
+      <div class="tree__layer"></div>
+      <div class="tree__layer"></div>
+      <div class="tree__lights">
+        <span class="light l1"></span><span class="light l2"></span><span class="light l3"></span>
+        <span class="light l4"></span><span class="light l5"></span><span class="light l6"></span>
+      </div>
+      <div class="tree__trunk"></div>
+    </div>
+
+    <div class="countdown" aria-live="polite">
+      <div class="countdown__title" id="cdTitle">До Нового года осталось</div>
+      <div class="countdown__grid" id="cdGrid">
+        <div class="countdown__cell">
+          <div class="countdown__num" id="cdDays">0</div>
+          <div class="countdown__label" id="cdDaysLbl">дней</div>
+        </div>
+        <div class="countdown__cell">
+          <div class="countdown__num" id="cdHours">00</div>
+          <div class="countdown__label">часов</div>
+        </div>
+        <div class="countdown__cell">
+          <div class="countdown__num" id="cdMins">00</div>
+          <div class="countdown__label">минут</div>
+        </div>
+        <div class="countdown__cell">
+          <div class="countdown__num" id="cdSecs">00</div>
+          <div class="countdown__label">секунд</div>
+        </div>
+      </div>
+      <div class="countdown__done" id="cdDone" hidden>🎉 С Новым годом! 🎉</div>
+    </div>
+  </div>
+
+  <div class="snow snow_1"></div><div class="snow snow_2"></div><div class="snow snow_3"></div>
+  <div class="snow snow_4"></div><div class="snow snow_5"></div><div class="snow snow_6"></div>
+  <div class="snow snow_7"></div><div class="snow snow_8"></div><div class="snow snow_9"></div>
+  <div class="snow snow_10"></div><div class="snow snow_11"></div><div class="snow snow_12"></div>
+  <div class="snow snow_13"></div><div class="snow snow_14"></div><div class="snow snow_15"></div>
+  <div class="snow snow_16"></div><div class="snow snow_17"></div><div class="snow snow_18"></div>
+  <div class="snow snow_19"></div>
+
   <script>
-    // Получаем имя из URL
-    function getUrlParam(name) {
-      const params = new URLSearchParams(window.location.search);
-      return params.get(name);
+    // === ФУНКЦИИ ===
+    function getUrlParams() {
+      return new URLSearchParams(window.location.search);
     }
 
-    // Основная логика
-    document.addEventListener("DOMContentLoaded", () => {
-      let name = getUrlParam("name") || "друг";
-      
-      // Декодируем, если нужно
+    function getParam(name, fallback = null) {
+      const params = getUrlParams();
+      const val = params.get(name);
+      if (val === null) return fallback;
       try {
-        name = decodeURIComponent(name);
-      } catch (e) {
-        // Используем как есть
+        return decodeURIComponent(val).trim();
+      } catch {
+        return val.trim();
+      }
+    }
+
+    function setParam(key, value) {
+      const params = getUrlParams();
+      if (value === null || value === "") {
+        params.delete(key);
+      } else {
+        params.set(key, encodeURIComponent(value));
+      }
+      const newUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+      return newUrl;
+    }
+
+    // === ТЕКСТЫ ===
+    const DEFAULT_MESSAGE = "Я желаю тебе здоровья, денег и удачи. Пусть новый год будет таким, каким ты хочешь! А также надеюсь ты найдёшь ответ для себя для решения формулы A=x+y+z , где А это Успех!";
+    const DEFAULT_AUTHOR = "Вадим Егги";
+
+    // === ОТОБРАЖЕНИЕ ===
+    function renderGreeting() {
+      const to = getParam("to", getParam("name", "друг"));
+      const from = getParam("from", DEFAULT_AUTHOR);
+      const customMessage = getParam("message");
+      const useCustom = getParam("use_custom") === "1";
+
+      document.getElementById("tgName").textContent = to + ",";
+      document.querySelector(".congrats__author").textContent = `${from}, Декабрь 2025`;
+
+      const messageEl = document.querySelector(".congrats__message");
+      if (useCustom && customMessage) {
+        messageEl.textContent = customMessage;
+      } else {
+        messageEl.textContent = DEFAULT_MESSAGE;
+      }
+    }
+
+    function renderForm() {
+      const container = document.getElementById("config-panel");
+      if (!container) return;
+
+      const to = getParam("to", getParam("name", ""));
+      const from = getParam("from", DEFAULT_AUTHOR);
+      const customMessage = getParam("message", "");
+      const useCustom = getParam("use_custom") === "1";
+
+      container.innerHTML = `
+        <div style="background: rgba(12, 50, 85, 0.95); padding: 16px; border-radius: 16px; max-width: 90vw; width: 400px; margin: 0 auto; color: white; box-shadow: 0 4px 20px rgba(0,0,0,0.3); font-family: 'Marck Script', cursive; font-size: 1.2rem;">
+          <h3 style="margin-top: 0; font-size: 1.4rem;">🎄 Настройка поздравления</h3>
+          
+          <label>Кому:<br>
+            <input id="input-to" type="text" value="${to}" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem;">
+          </label>
+          
+          <label>От кого:<br>
+            <input id="input-from" type="text" value="${from}" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem;">
+          </label>
+
+          <label style="display: flex; align-items: center; margin: 10px 0;">
+            <input type="checkbox" id="use-custom" ${useCustom ? 'checked' : ''}>
+            <span style="margin-left: 8px;">Использовать свой текст</span>
+          </label>
+
+          <textarea id="input-message" rows="4" style="width:100%; padding:6px; margin:4px 0; border-radius:6px; border:1px solid #4a90e2; font-family: inherit; font-size: 1rem; display: ${useCustom ? 'block' : 'none'};">${customMessage}</textarea>
+
+          <div style="display: flex; gap: 8px; margin-top: 12px;">
+            <button id="btn-apply" style="flex:1; background:#4a90e2; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; font-family: inherit;">Применить</button>
+            <button id="btn-share" style="flex:1; background:#50c878; color:white; border:none; padding:8px; border-radius:8px; cursor:pointer; font-family: inherit;">Ссылка</button>
+          </div>
+
+          <div id="share-link" style="margin-top: 12px; font-size: 0.85rem; word-break: break-all; display: none;"></div>
+        </div>
+      `;
+
+      document.getElementById("use-custom").addEventListener("change", (e) => {
+        document.getElementById("input-message").style.display = e.target.checked ? "block" : "none";
+      });
+
+      document.getElementById("btn-apply").addEventListener("click", () => {
+        const to = document.getElementById("input-to").value || "друг";
+        const from = document.getElementById("input-from").value || DEFAULT_AUTHOR;
+        const useCustom = document.getElementById("use-custom").checked;
+        const message = useCustom ? document.getElementById("input-message").value : "";
+        setParam("to", to);
+        setParam("from", from);
+        setParam("use_custom", useCustom ? "1" : "0");
+        setParam("message", useCustom ? message : null);
+        renderGreeting();
+        document.getElementById("share-link").style.display = "none";
+      });
+
+      document.getElementById("btn-share").addEventListener("click", () => {
+        const link = window.location.href;
+        document.getElementById("share-link").textContent = link;
+        document.getElementById("share-link").style.display = "block";
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(link);
+        }
+      });
+    }
+
+    // === ИНИЦИАЛИЗАЦИЯ ===
+    document.addEventListener("DOMContentLoaded", () => {
+      const showConfig = getParam("edit") === "1";
+
+      if (showConfig) {
+        const panel = document.createElement("div");
+        panel.id = "config-panel";
+        panel.style.pointerEvents = "auto";
+        document.body.appendChild(panel);
+        renderForm();
       }
 
-      // Формируем поздравление
-      const greeting = document.getElementById("greeting");
-      greeting.innerHTML = `
-        <p>${name},</p>
-        <p>с Новым годом! 🎄</p>
-        <p style="font-size: 1.2rem; margin-top: 20px;">
-          Тебе прислали это поздравление.<br>
-          Пусть 2026 год принесёт тебе удачу, здоровье и успех!
-        </p>
-      `;
+      renderGreeting();
+
+      // Многоязычность и таймер
+      function updateCountdown() {
+        const now = new Date();
+        const target = new Date(now.getFullYear() + 1, 0, 1, 0, 0, 0);
+        const diffMs = target - now;
+        if (diffMs <= 0) {
+          document.getElementById("cdGrid").hidden = true;
+          document.getElementById("cdDone").hidden = false;
+          return;
+        }
+        const totalSec = Math.floor(diffMs / 1000);
+        const days = Math.floor(totalSec / 86400);
+        const hours = String(Math.floor((totalSec % 86400) / 3600)).padStart(2, "0");
+        const mins = String(Math.floor((totalSec % 3600) / 60)).padStart(2, "0");
+        const secs = String(totalSec % 60).padStart(2, "0");
+        document.getElementById("cdDays").textContent = days;
+        document.getElementById("cdHours").textContent = hours;
+        document.getElementById("cdMins").textContent = mins;
+        document.getElementById("cdSecs").textContent = secs;
+        document.getElementById("cdDaysLbl").textContent = 
+          days % 10 === 1 && days % 100 !== 11 ? "день" :
+          days % 10 >= 2 && days % 10 <= 4 && (days % 100 < 10 || days % 100 >= 20) ? "дня" : "дней";
+      }
+
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
     });
   </script>
 </body>
